@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 router.post("/", async (req, res) => {
   try {
     const { time } = req.body;
-    const date = new Date(parseInt(time));
+    // const date = new Date(parseInt(time));
 
     // Get saved email
     const emailDoc = await Email.findOne();
@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
       from: `"Home Security" <${emailDoc.email}>`,
       to: emailDoc.email,
       subject: "🚨 Intrusion Alert!",
-      text: `Intrusion detected by the window at ${date.toLocaleString()}`,
+      text: `Intrusion detected by the window at ${time}`,
     });
 
     res.json({
