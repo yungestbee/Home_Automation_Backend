@@ -13,10 +13,10 @@ app.use(cors());
 app.use(express.json());
 connectDB(); // Connect to MongoDB
 
-// app.use("/api/door", doorRoutes);
-// app.use("/api/light", lightRoutes);
+
+app.use("/api/email", emailRoutes);
 app.use("/api/alert", alertRoutes);
-app.use("/api/command", commandRoutes);
+app.use("/api", commandRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));

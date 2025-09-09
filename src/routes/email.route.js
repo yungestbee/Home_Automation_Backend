@@ -2,9 +2,8 @@ const express = require("express");
 const Email = require("../models/Email"); // import model
 const router = express.Router();
 
-
 // Save or replace email (first-time and updates)
-router.post("/email", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { address } = req.body;
 
@@ -15,15 +14,18 @@ router.post("/email", async (req, res) => {
       { upsert: true, new: true } // if no doc, create one
     );
 
-    res.json({ success: true, message: "Email saved/updated", email: updatedEmail });
+    res.json({
+      success: true,
+      message: "Email saved/updated",
+      email: updatedEmail,
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-
 // Get current email
-router.get("/email", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const email = await Email.findOne();
     if (!email) {
@@ -34,7 +36,5 @@ router.get("/email", async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
-
 
 module.exports = router;
