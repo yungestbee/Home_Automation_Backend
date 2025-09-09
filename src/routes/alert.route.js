@@ -4,8 +4,6 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 const Email = require("../models/Email.js");
 
-
-
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -14,7 +12,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
 router.post("/", async (req, res) => {
   try {
     const { time } = req.body;
@@ -22,7 +19,7 @@ router.post("/", async (req, res) => {
 
     // Get saved email
     const emailDoc = await Email.findOne();
-    if (!emailDoc || !emailDoc.address) {
+    if (!emailDoc || !emailDoc.email) {
       return res
         .status(400)
         .json({ success: false, message: "No recipient email set" });
@@ -30,15 +27,15 @@ router.post("/", async (req, res) => {
 
     // Send email
     await transporter.sendMail({
-      from: `"Home Security" <${process.env.EMAIL_USER}>`,
-      to: emailDoc.address,
+      from: `"Home Security" <${emailDoc.email}>`,
+      to: emailDoc.email,
       subject: "🚨 Intrusion Alert!",
       text: `Intrusion detected by the window at ${date.toLocaleString()}`,
     });
 
     res.json({
       success: true,
-      message: `Intrusion alert sent to ${emailDoc.address}`,
+      message: `Intrusion alert sent to ${emailDoc.email}`,
     });
   } catch (err) {
     console.error(err.message);
@@ -47,6 +44,5 @@ router.post("/", async (req, res) => {
       .json({ success: false, error: "Failed to send intrusion alert" });
   }
 });
-
 
 module.exports = router;
