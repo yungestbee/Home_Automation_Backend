@@ -2,25 +2,22 @@ const express = require("express");
 const Email = require("../models/Email"); // import model
 const router = express.Router();
 
-// Save or replace email (first-time and updates)
+
+
 router.post("/", async (req, res) => {
   try {
     const { address } = req.body;
+    if (!address) return res.status(400).send("Email is required");
 
-    // Create or replace the only email document
-    const updatedEmail = await Email.findOneAndUpdate(
-      {}, // empty filter → find the first doc
-      { address, updatedAt: new Date() }, // update with new data
-      { upsert: true, new: true } // if no doc, create one
-    );
+    // Ensure only one email is stored
+    await Email.deleteMany({});
+    const emailDoc = new Email({ address });
+    await emailDoc.save();
 
-    res.json({
-      success: true,
-      message: "Email saved/updated",
-      email: updatedEmail,
-    });
+    res.json({ success: true, email: address });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error(err.message);
+    res.status(500).send("Failed to save email");
   }
 });
 
