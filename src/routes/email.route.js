@@ -11,8 +11,10 @@ router.post("/", async (req, res) => {
 
     // Ensure only one email is stored
     await Email.deleteMany({});
-    const emailDoc = new Email({ address });
+    const emailDoc = new Email({ email:address });
     await emailDoc.save();
+
+    console.log(emailDoc)
 
     res.json({ success: true, email: address });
   } catch (err) {
