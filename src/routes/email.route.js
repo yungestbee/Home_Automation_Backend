@@ -23,19 +23,14 @@ router.post("/", async (req, res) => {
     console.log("Sending intrusion alert...");
 
     // Send email using Resend
-    await resend.emails.send({
-      from: "Home Security <alerts@resend.dev>", // You can change this later to your domain
+    const response = await resend.emails.send({
+      from: "Home Security <onboarding@resend.dev>",
       to: emailDoc.email,
       subject: "🚨 Intrusion Alert!",
       html: `<p><strong>Intrusion detected!</strong><br>Window sensor triggered at <b>${time}</b>.</p>`,
     });
 
-    res.json({
-      success: true,
-      message: `Intrusion alert sent to ${emailDoc.email}`,
-    });
-
-    console.log("✅ Email sent successfully");
+    console.log("Resend response:", response);
   } catch (err) {
     console.error("❌ Email sending failed:", err.message);
     res.status(500).json({
