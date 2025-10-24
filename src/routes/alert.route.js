@@ -14,6 +14,7 @@ const transporter = nodemailer.createTransport({
 });
 
 router.post("/", async (req, res) => {
+  console.log("about to send")
   try {
     const { time } = req.body;
 
@@ -41,7 +42,7 @@ router.post("/", async (req, res) => {
       message: `Intrusion alert sent to ${emailDoc.address}`,
     });
   } catch (err) {
-    console.error("❌ Error sending email:", err.message);
+    console.log("❌ Error sending email:", err.message);
     res
       .status(500)
       .json({ success: false, error: "Failed to send intrusion alert" });
