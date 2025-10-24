@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
     }
 
     await resend.emails.send({
-      from: "Home Security <alerts@resend.dev>",
+      from: "Home Security <onboarding@resend.dev>",
       to: emailDoc.email,
       subject: "🚨 Intrusion Alert!",
       html: `<p>Intrusion detected by the window at ${time}</p>`,
