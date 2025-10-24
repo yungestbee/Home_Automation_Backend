@@ -3,7 +3,7 @@ const Email = require("../models/Email"); // import model
 const router = express.Router();
 
 // Save or replace email (first-time and updates)
-router.post("/email", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { address } = req.body;
 
@@ -25,7 +25,7 @@ router.post("/email", async (req, res) => {
 });
 
 // Get current email
-router.get("/email", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const email = await Email.findOne();
     if (!email) {
