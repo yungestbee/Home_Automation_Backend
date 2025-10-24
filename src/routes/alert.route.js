@@ -10,7 +10,7 @@ router.post("/", async (req, res) => {
   try {
     const { time } = req.body;
     const emailDoc = await Email.findOne();
-    if (!emailDoc || !emailDoc.email) {
+    if (!emailDoc || !emailDoc.address) {
       return res
         .status(400)
         .json({ success: false, message: "No recipient email set" });
@@ -18,14 +18,14 @@ router.post("/", async (req, res) => {
 
     await resend.emails.send({
       from: "Home Security <onboarding@resend.dev>",
-      to: emailDoc.email,
+      to: emailDoc.address,
       subject: "🚨 Intrusion Alert!",
       html: `<p>Intrusion detected by the window at ${time}</p>`,
     });
 
     res.json({
       success: true,
-      message: `Intrusion alert sent to ${emailDoc.email}`,
+      message: `Intrusion alert sent to ${emailDoc.address}`,
     });
     console.log("email sent");
   } catch (err) {
