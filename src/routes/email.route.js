@@ -1,42 +1,39 @@
 const express = require("express");
+const Email = require("../models/Email"); // import model
 const router = express.Router();
-const { Resend } = require("resend");
-require("dotenv").config();
-const Email = require("../models/Email.js");
 
-// Initialize Resend with your API key
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-router.post("/", async (req, res) => {
+// Save or replace email (first-time and updates)
+router.post("/email", async (req, res) => {
   try {
-    const { time } = req.body;
+    const { address } = req.body;
 
-    // Get saved recipient email from DB
-    const emailDoc = await Email.findOne();
-    if (!emailDoc || !emailDoc.email) {
-      return res.status(400).json({
-        success: false,
-        message: "No recipient email set",
-      });
-    }
+    // Create or replace the only email document
+    const updatedEmail = await Email.findOneAndUpdate(
+      {}, // empty filter → find the first doc
+      { address, updatedAt: new Date() }, // update with new data
+      { upsert: true, new: true } // if no doc, create one
+    );
 
-    console.log("Sending intrusion alert...");
-
-    // Send email using Resend
-    const response = await resend.emails.send({
-      from: "Home Security <onboarding@resend.dev>",
-      to: emailDoc.email,
-      subject: "🚨 Intrusion Alert!",
-      html: `<p><strong>Intrusion detected!</strong><br>Window sensor triggered at <b>${time}</b>.</p>`,
+    res.json({
+      success: true,
+      message: "Email saved/updated",
+      email: updatedEmail,
     });
-
-    console.log("Resend response:", response);
   } catch (err) {
-    console.error("❌ Email sending failed:", err.message);
-    res.status(500).json({
-      success: false,
-      error: "Failed to send intrusion alert",
-    });
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get current email
+router.get("/email", async (req, res) => {
+  try {
+    const email = await Email.findOne();
+    if (!email) {
+      return res.json({ address: null, message: "No email set yet" });
+    }
+    res.json(email);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
