@@ -1,44 +1,35 @@
 const express = require("express");
 const router = express.Router();
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 require("dotenv").config();
 const Email = require("../models/Email.js");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER, // Use environment variable
-    pass: process.env.EMAIL_PASS, // Use environment variable
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-router.post("/intrusion", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const { sensor, time } = req.body;
-
-    // Get saved email
+    const { time } = req.body;
     const emailDoc = await Email.findOne();
-    if (!emailDoc || !emailDoc.address) {
+    if (!emailDoc || !emailDoc.email) {
       return res
         .status(400)
         .json({ success: false, message: "No recipient email set" });
     }
 
-    // Send email
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: emailDoc.address,
+    await resend.emails.send({
+      from: "Home Security <alerts@resend.dev>",
+      to: emailDoc.email,
       subject: "🚨 Intrusion Alert!",
-      text: `Intrusion detected by ${sensor} at ${time}`,
+      html: `<p>Intrusion detected by the window at ${time}</p>`,
     });
 
     res.json({
       success: true,
-      message: `Intrusion alert sent to ${emailDoc.address}`,
+      message: `Intrusion alert sent to ${emailDoc.email}`,
     });
-    console.log("Mail sent");
+    console.log("email sent");
   } catch (err) {
-    console.error(err.message);
+    console.log(err.message);
     res
       .status(500)
       .json({ success: false, error: "Failed to send intrusion alert" });
