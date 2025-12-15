@@ -1,14 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const Sib = require("@getbrevo/brevo");
+const sgMail = require("@sendgrid/mail");
 require("dotenv").config();
 const Email = require("../models/Email.js");
+
+// Configure SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 router.post("/", async (req, res) => {
   try {
     const { time } = req.body;
 
-    // Fetch saved email from DB
+    // Fetch recipient email
     const emailDoc = await Email.findOne();
     if (!emailDoc?.address) {
       return res.status(400).json({
@@ -17,36 +20,27 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Brevo client setup
-    const client = new Sib.TransactionalEmailsApi();
-    client.setApiKey(
-      Sib.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.BREVO_API_KEY
-    );
-
-    // Email details
-    const emailData = {
-      sender: {
-        name: "Home Security",
-        email: process.env.SENDER_EMAIL, // e.g. your Gmail or any sender
-      },
-      to: [{ email: emailDoc.address }],
-      subject: "🚨 Intrusion Alert Detected!",
-      htmlContent: `
+    const msg = {
+      to: emailDoc.address,
+      from: process.env.SENDER_EMAIL, // sandbox sender
+      subject: "🚨 Intrusion Alert!",
+      html: `
+        <h3>Security Alert</h3>
         <p>An intrusion was detected at <strong>${time}</strong>.</p>
         <p>Please take immediate action.</p>
       `,
     };
 
-    // Send mail with Brevo
-    await client.sendTransacEmail(emailData);
+    await sgMail.send(msg);
 
     res.json({
       success: true,
       message: `Intrusion alert sent to ${emailDoc.address}`,
     });
+
+    console.log("✅ Email sent via SendGrid");
   } catch (error) {
-    console.error("Email send error:", error);
+    console.error("❌ SendGrid error:", error.response?.body || error.message);
     res.status(500).json({
       success: false,
       error: "Failed to send intrusion alert",
